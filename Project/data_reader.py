@@ -20,14 +20,25 @@ class DataReader:
         self.img_size_checked = False
         self.train_samples_size = 0
         self.validation_samples_size = 0
+        self.log_file_name = 'driving_log.csv'
 
-    def read_csv_file(self, file):
-        '''read and return lines from input csv file'''
+    def read_csv_file(self, paths_list):
+        """Read all csv files in paths in list. Shuffle them.
+
+            Args:
+                paths_list (list): list of paths in which csv files are placed
+
+            Returns:
+                list of tuples: Shuffled list of tuples: csv line and source path
+        """
         lines = []
-        with open(file) as csvfile:
-            reader = csv.reader(csvfile)
-            for line in reader:
-                lines.append(line)
+        for path in paths_list:
+            file = path + self.log_file_name
+            with open(file) as csvfile:
+                reader = csv.reader(csvfile)
+                for line in reader:
+                    lines.append((line, path))
+        shuffle(lines)
         return lines
 
     def visualize_data(self, frames, angles):
@@ -42,8 +53,8 @@ class DataReader:
             if cv2.waitKey(500) & 0xFF == ord('q'):
                 break
 
-    def read_using_generator(self, file, path, batch_size=32, debug=False):
-        lines = self.read_csv_file(file)
+    def read_using_generator(self, paths_list, batch_size=32, debug=False):
+        lines = self.read_csv_file(paths_list)
         train_samples, validation_samples = train_test_split(lines, test_size=0.2)
         self.train_samples_size = len(train_samples)
         self.validation_samples_size = len(validation_samples)
@@ -51,11 +62,11 @@ class DataReader:
             print("Train set size is " + str(self.train_samples_size))
             print("Validation set size is " + str(self.validation_samples_size))
         # compile and train the model using the generator function
-        train_generator = self.__generator(train_samples, path, batch_size=batch_size)
-        validation_generator = self.__generator(validation_samples, path, batch_size=batch_size)
+        train_generator = self.__generator(train_samples, batch_size=batch_size)
+        validation_generator = self.__generator(validation_samples, batch_size=batch_size)
         return train_generator, validation_generator
 
-    def __generator(self, samples, path, batch_size=32, angle_correction = 0.2):
+    def __generator(self, samples, batch_size=32, angle_correction = 0.2):
         '''produces a series of data sets and their labels.'''
         num_samples = len(samples)
         while 1:  # Loop forever so the generator never terminates
@@ -64,17 +75,18 @@ class DataReader:
                 batch_samples = samples[offset:offset + batch_size]
                 images = []
                 angles = []  # steering angles
-                for batch_sample in batch_samples:
+                for batch_sample in batch_samples: # batch_sample is a tuple
                     # read images
-                    path_to_img = 'IMG/'
-                    center_name = path + path_to_img + batch_sample[0].split('/')[-1]
+                    path_to_img = batch_sample[1] + 'IMG/'
+                    csv_line = batch_sample[0]
+                    center_name = path_to_img + csv_line[0].split('/')[-1]
                     img_center = cv2.imread(center_name)
-                    left_name = path + path_to_img + batch_sample[1].split('/')[-1]
+                    left_name = path_to_img + csv_line[1].split('/')[-1]
                     img_left = cv2.imread(left_name)
-                    right_name = path + path_to_img + batch_sample[2].split('/')[-1]
+                    right_name = path_to_img + csv_line[2].split('/')[-1]
                     img_right = cv2.imread(right_name)
                     # set angles
-                    center_angle = float(batch_sample[3])
+                    center_angle = float(csv_line[3])
                     steering_left = center_angle + angle_correction
                     steering_right = center_angle - angle_correction
                     # add images and angles to data set
@@ -100,13 +112,12 @@ def test_generator():
                                                    str(X_train[0].shape[2])))
 
 def visualize_data():
-    path = 'data/clockwise_1/'
-    file_name = path + 'driving_log.csv'
+    paths_list = ['data/clockwise/', 'data/clockwise_1/', 'data/counterclockwise/', 'data/clockcouterwise_1/', 'data/counterclockwise_recovery/']
     reader = DataReader()
     # Set our batch size
     batch_size = 32
     # compile and train the model using the generator function
-    [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=batch_size, debug=True)
+    [train_generator, validation_generator] = reader.read_using_generator(paths_list, batch_size=batch_size, debug=True)
     # call on the generator iterator
     [X_train, y_train] = next(train_generator)
     # store frames as video
