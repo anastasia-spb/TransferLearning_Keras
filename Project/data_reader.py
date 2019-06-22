@@ -16,17 +16,10 @@ class DataReader:
     """ DataReader class is a set of functions required for manipulating with data.  """
 
     def __init__(self):
-        self.image_shape = (90, 320, 3)
+        self.image_shape = (160, 320, 3)
         self.img_size_checked = False
         self.train_samples_size = 0
         self.validation_samples_size = 0
-
-    @staticmethod
-    def trim_image(img, bottom_crop=20, top_crop=50):
-        '''crop image top and bottom parts. This function changes the image HEIGHT!'''
-        height, width, channels = img.shape
-        crop_img = img[top_crop:height - bottom_crop, :, :]
-        return crop_img
 
     def read_csv_file(self, file):
         '''read and return lines from input csv file'''
@@ -36,6 +29,18 @@ class DataReader:
             for line in reader:
                 lines.append(line)
         return lines
+
+    def visualize_data(self, frames, angles):
+        '''
+        Process input video frame by frame
+        '''
+        for frame, angle in zip(frames, angles):
+            cv2.putText(frame, str(angle), (200, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+            # Display the resulting frame
+            cv2.imshow('frame', frame)
+            # Press Q on keyboard to  exit
+            if cv2.waitKey(500) & 0xFF == ord('q'):
+                break
 
     def read_using_generator(self, file, path, batch_size=32, debug=False):
         lines = self.read_csv_file(file)
@@ -50,7 +55,7 @@ class DataReader:
         validation_generator = self.__generator(validation_samples, path, batch_size=batch_size)
         return train_generator, validation_generator
 
-    def __generator(self, samples, path, batch_size=32):
+    def __generator(self, samples, path, batch_size=32, angle_correction = 0.2):
         '''produces a series of data sets and their labels.'''
         num_samples = len(samples)
         while 1:  # Loop forever so the generator never terminates
@@ -60,27 +65,28 @@ class DataReader:
                 images = []
                 angles = []  # steering angles
                 for batch_sample in batch_samples:
-                    name = path + 'IMG/' + batch_sample[0].split('/')[-1]
-                    center_image = cv2.imread(name)
+                    # read images
+                    path_to_img = 'IMG/'
+                    center_name = path + path_to_img + batch_sample[0].split('/')[-1]
+                    img_center = cv2.imread(center_name)
+                    left_name = path + path_to_img + batch_sample[1].split('/')[-1]
+                    img_left = cv2.imread(left_name)
+                    right_name = path + path_to_img + batch_sample[2].split('/')[-1]
+                    img_right = cv2.imread(right_name)
+                    # set angles
                     center_angle = float(batch_sample[3])
-                    # trim image to only see section with road
-                    center_image = self.trim_image(center_image)
-                    if not self.img_size_checked: # check that image shape is the same as expected (default trim parameters)
-                        [image_height, image_width, image_channels] = center_image.shape
-                        if center_image.shape != self.image_shape:
-                            print("Image size differs from the expected one.")
-                            raise
-                        self.img_size_checked = True
-                    images.append(center_image)
-                    angles.append(center_angle)
+                    steering_left = center_angle + angle_correction
+                    steering_right = center_angle - angle_correction
+                    # add images and angles to data set
+                    images.extend([img_center, img_left, img_right])
+                    angles.extend([center_angle, steering_left, steering_right])
 
                 X_train = np.array(images)
                 y_train = np.array(angles)
                 yield sklearn.utils.shuffle(X_train, y_train)
 
-
 def test_generator():
-    path = 'data/clockwise_recovery/'
+    path = 'data/clockwise_add/'
     file_name = path + 'driving_log.csv'
     reader = DataReader()
     # Set our batch size
@@ -88,11 +94,23 @@ def test_generator():
     # compile and train the model using the generator function
     [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=batch_size, debug=True)
     # call on the generator iterator
-    next(train_generator)
+    [X_train, y_train] = next(train_generator)
     # print some information about data
-    print("Image dimension is: {0}x{1}x{2}".format(str(reader.image_shape[0]), str(reader.image_shape[1]),
-                                                   str(reader.image_shape[2])))
+    print("Image dimension is: {0}x{1}x{2}".format(str(X_train[0].shape[0]), str(X_train[0].shape[1]),
+                                                   str(X_train[0].shape[2])))
 
+def visualize_data():
+    path = 'data/clockwise_1/'
+    file_name = path + 'driving_log.csv'
+    reader = DataReader()
+    # Set our batch size
+    batch_size = 32
+    # compile and train the model using the generator function
+    [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=batch_size, debug=True)
+    # call on the generator iterator
+    [X_train, y_train] = next(train_generator)
+    # store frames as video
+    reader.visualize_data(X_train, y_train)
 
 if __name__ == '__main__':
-    test_generator()
+    visualize_data()

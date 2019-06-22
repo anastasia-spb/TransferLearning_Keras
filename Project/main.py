@@ -16,24 +16,26 @@ class LearningParams:
         self.num_epochs = 5
 
 
-def learnig_pipeline(save_path='model_checkpoints/'):
+def learnig_pipeline():
     # 0. load parameters
     params = LearningParams()
     # 1. load the data
-    file_name = 'data/driving_log.csv'
+    path = 'data/clockwise_add/'
+    file_name = path + 'driving_log.csv'
     reader = dread.DataReader()
     # compile and train the model using the generator function
-    [train_generator, validation_generator] = reader.read_using_generator(file_name, batch_size=params.batch_size,
+    [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=params.batch_size,
                                                                           debug=False)
     input_shape = (reader.image_shape[2], reader.image_shape[0], reader.image_shape[1])
     # 2. Create the model
-    clone_model = model.BehavioralCloneModel()
+    clone_model = model.BehavioralCloneModel(reader.image_shape)
 
     # 2.2 Compile the model
     clone_model.model.compile(loss='mse', optimizer='adam')
     steps_per_epoch = math.ceil(reader.train_samples_size / params.batch_size)
     validation_steps = math.ceil(reader.validation_samples_size / params.batch_size)
 
+    save_path = "model_checkpoints/saved-model-{epoch:02d}-{val_loss:.2f}.hdf5"
     checkpoint = keras.callbacks.ModelCheckpoint(filepath=save_path, monitor='val_loss', save_best_only=True)
 
     history_object = clone_model.model.fit_generator(train_generator, steps_per_epoch=steps_per_epoch,
@@ -58,5 +60,10 @@ def learnig_pipeline(save_path='model_checkpoints/'):
     plt.show()
 
 
+def store_model_weights():
+    x = keras.models.load_model('model.h5')  # runs only on the source machine
+    x.save_weights('weights.h5')
+
 if __name__ == '__main__':
-    learnig_pipeline()
+    #learnig_pipeline()
+    store_model_weights()
