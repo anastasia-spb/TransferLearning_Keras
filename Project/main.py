@@ -20,15 +20,18 @@ def learnig_pipeline():
     # 0. load parameters
     params = LearningParams()
     # 1. load the data
-    path = 'data/clockwise_add/'
-    file_name = path + 'driving_log.csv'
+    paths_list = ['data/clockwise/', 'data/clockwise_1/', 'data/counterclockwise/', 'data/clockcouterwise_1/',
+                  'data/counterclockwise_recovery/', 'data/clockwise_recovery/']
     reader = dread.DataReader()
     # compile and train the model using the generator function
-    [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=params.batch_size,
+    [train_generator, validation_generator] = reader.read_using_generator(paths_list, batch_size=params.batch_size,
                                                                           debug=False)
     input_shape = (reader.image_shape[2], reader.image_shape[0], reader.image_shape[1])
     # 2. Create the model
     clone_model = model.BehavioralCloneModel(reader.image_shape)
+
+    for layer in clone_model.model.layers:
+        print(layer.output_shape)
 
     # 2.2 Compile the model
     clone_model.model.compile(loss='mse', optimizer='adam')
@@ -65,5 +68,5 @@ def store_model_weights():
     x.save_weights('weights.h5')
 
 if __name__ == '__main__':
-    #learnig_pipeline()
+    learnig_pipeline()
     store_model_weights()
