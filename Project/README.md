@@ -230,6 +230,16 @@ As an optimizer the Adam optimization algorithm is used. It is an extension to s
 
 Training is performed in 5 epochs.
 
+## The original architecture
+
+The original proposed architecture from the article with 5 convolutional layers and
+without max pooling layers in between was also tested. 
+
+![5CNN Architecture](readme_img/Architecture_5CNN.jpg)
+
+Dropout layers were added between first and second fully connected layers to prevent over-fitting.
+
+
 Train and validation results
 ----------------------------
 
