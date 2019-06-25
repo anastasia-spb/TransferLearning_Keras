@@ -123,6 +123,8 @@ if __name__ == '__main__':
         print('You are using Keras version ', keras_version,
               ', but the model was built using ', model_version)
 
+    # the standard load model functionality doesn't work
+    # due to different architectures of train and target machines.
     image_shape = (160, 320, 3)
     md7_model = md7.BehavioralCloneModel(image_shape)
     model = md7_model.model

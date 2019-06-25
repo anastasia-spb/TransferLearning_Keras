@@ -43,7 +43,7 @@ class DataReader:
 
     def visualize_data(self, frames, angles):
         '''
-        Process input video frame by frame
+        Show images and their labels (angles) with 500 ms interval
         '''
         for frame, angle in zip(frames, angles):
             cv2.putText(frame, str(angle), (200, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
@@ -54,6 +54,16 @@ class DataReader:
                 break
 
     def read_using_generator(self, paths_list, batch_size=32, debug=False):
+        """Read images from paths_list using generator
+
+            Args:
+                paths_list (list): list of paths in which csv files are placed
+                batch_size (int): batch size. Default value = 32
+                debug (bool): defines if debug info shall be printed out
+
+            Returns:
+                [train_generator, validation_generator] : generators for train and validation data sets
+        """
         lines = self.read_csv_file(paths_list)
         train_samples, validation_samples = train_test_split(lines, test_size=0.2)
         self.train_samples_size = len(train_samples)
@@ -102,13 +112,12 @@ class DataReader:
 
 
 def test_generator():
-    path = 'data/clockwise_add/'
-    file_name = path + 'driving_log.csv'
+    paths_list = ['data/clockwise/', 'data/clockwise_1/', 'data/counterclockwise/', 'data/clockcouterwise_1/']
     reader = DataReader()
     # Set our batch size
     batch_size = 32
     # compile and train the model using the generator function
-    [train_generator, validation_generator] = reader.read_using_generator(file_name, path, batch_size=batch_size,
+    [train_generator, validation_generator] = reader.read_using_generator(paths_list, batch_size=batch_size,
                                                                           debug=True)
     # call on the generator iterator
     [X_train, y_train] = next(train_generator)

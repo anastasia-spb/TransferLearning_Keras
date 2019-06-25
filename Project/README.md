@@ -243,7 +243,32 @@ Dropout layers were added between first and second fully connected layers to pre
 Train and validation results
 ----------------------------
 
+Below is shown the mean squared error loss for the network with 4 CNN layers:
+
 ![Mean Squared Error Loss for 4CNN Net](readme_img/MeanSquaredErrorLoss_4CNN.png)
+
+The next graph corresponds to the network with 5 layers.
+
+![Mean Squared Error Loss for 5CNN Net](readme_img/MeanSquaredErrorLoss_5CNN.png)
 
 Conclusion & Reflection
 -----------------------
+
+The trained model was able to drive autonomously one full lap on the first track.
+The driving behavior is even smoother than on the training video.
+Part laps for training, 4CNN and 5CNN videos are placed in `automonous_results` folder.
+
+The main complication during development was training time and samples collection.
+In order to experiment with parameters in wider range the high performance machine is required.
+
+For this particular task with only one sensor (camera) and small training dataset
+relative simple network was sufficient.
+
+![Video](automonous_results/4CNN_train_4CNN.mp4)
+
+
+
+
+
+
+

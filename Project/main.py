@@ -11,6 +11,7 @@ import data_reader as dread
 
 
 class LearningParams:
+    '''parameters for model training'''
     def __init__(self):
         self.batch_size = 32
         self.num_epochs = 5
