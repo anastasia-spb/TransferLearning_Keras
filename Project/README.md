@@ -190,9 +190,7 @@ The chosen model architecture was inspired by the following article:
 However the recommended architecture was modified in order to speed up
 the learning process on small performance machine.
 
-
 ![Udacity Simulator](readme_img/Architecture.png)
-
 
 | Layer            | Description                                                       |
 |------------------|-------------------------------------------------------------------|
@@ -214,61 +212,66 @@ the learning process on small performance machine.
 | Dropout          | Drop rate 0.5                                                     |
 | Fully connected  | input 10, output 1                                                |
 
+The resulting network consists of normalization layer, four
+convolutional layers, three fully connected layers and a single neuron
+as an output.
 
-The resulting network consists of normalization layer, four convolutional layers, three fully connected layers and a single neuron as an output. 
+Between convolutional layers are max pooling layers. MaxPooling layers
+not only help to prevent computational costs, but also prevent
+**over-fitting**.
 
-Between convolutional layers are max pooling layers. MaxPooling layers not only help to prevent computational costs, but also prevent **over-fitting**.
+Dropout layers also helps to avoid **over-fitting**.
 
-Dropout layers also helps to avoid **over-fitting**. 
+It's important to have such layers in the network hence 36000 samples is
+closer to the small training dataset than to the big one.
 
-It's important to have such layers in the network hence 36000 samples is closer to the small training dataset than to the big one. 
+The Mean Squared Error loss is the default loss to use for regression
+problems. So it was decided to leave it unchanged.
 
-The Mean Squared Error loss is the default loss to use for regression problems.
-So it was decided to leave it unchanged.
-
-As an optimizer the Adam optimization algorithm is used. It is an extension to stochastic gradient descent and one of the most used optimization algorithms.
+As an optimizer the Adam optimization algorithm is used. It is an
+extension to stochastic gradient descent and one of the most used
+optimization algorithms.
 
 Training is performed in 5 epochs.
 
-## The original architecture
+The original architecture
+-------------------------
 
-The original proposed architecture from the article with 5 convolutional layers and
-without max pooling layers in between was also tested. 
+The original proposed architecture from the article with 5 convolutional
+layers and without max pooling layers in between was also tested.
 
 ![5CNN Architecture](readme_img/Architecture_5CNN.jpg)
 
-Dropout layers were added between first and second fully connected layers to prevent over-fitting.
-
+Dropout layers were added between first and second fully connected
+layers to prevent over-fitting.
 
 Train and validation results
 ----------------------------
 
-Below is shown the mean squared error loss for the network with 4 CNN layers:
+Below is shown the mean squared error loss for the network with 4 CNN
+layers:
 
-![Mean Squared Error Loss for 4CNN Net](readme_img/MeanSquaredErrorLoss_4CNN.png)
+![Mean Squared Error Loss for 4CNN
+Net](readme_img/MeanSquaredErrorLoss_4CNN.png)
 
 The next graph corresponds to the network with 5 layers.
 
-![Mean Squared Error Loss for 5CNN Net](readme_img/MeanSquaredErrorLoss_5CNN.png)
+![Mean Squared Error Loss for 5CNN
+Net](readme_img/MeanSquaredErrorLoss_5CNN.png)
 
 Conclusion & Reflection
 -----------------------
 
-The trained model was able to drive autonomously one full lap on the first track.
-The driving behavior is even smoother than on the training video.
-Part laps for training, 4CNN and 5CNN videos are placed in `automonous_results` folder.
+The trained model was able to drive autonomously one full lap on the
+first track. The driving behavior is even smoother than on the training
+video. Part laps for training, 4CNN and 5CNN videos are placed in
+`automonous_results` folder.
 
-The main complication during development was training time and samples collection.
-In order to experiment with parameters in wider range the high performance machine is required.
+The main complication during development was training time and samples
+collection. In order to experiment with parameters in wider range the
+high performance machine is required.
 
-For this particular task with only one sensor (camera) and small training dataset
-relative simple network was sufficient.
+For this particular task with only one sensor (camera) and small
+training dataset relative simple network was sufficient.
 
-![Video](automonous_results/4CNN_train_4CNN.mp4)
-
-
-
-
-
-
-
+![Video](readme_img/4cnn_video.png)
